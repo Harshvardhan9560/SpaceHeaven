@@ -18,6 +18,12 @@ app.engine('ejs' , ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 
+console.log("ATLASDB_URL exists:", !!process.env.ATLASDB_URL);
+console.log("Mongo URL:", process.env.ATLASDB_URL ? "Present" : "Missing");
+
+
+
+
 main()
     .then(() => {
         console.log("Connected to DB");
