@@ -30,10 +30,11 @@ async function main() {
     await mongoose.connect(MONGO_URL);
 }
 
-app.listen(8080, () => {
-    console.log("Server is listening on port 8080");
-});
+const PORT = process.env.PORT || 8080;
 
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});
 // Root Route
 app.get("/", (req, res) => {
     res.redirect("/listings");
