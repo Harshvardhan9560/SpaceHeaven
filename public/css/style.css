@@ -110,3 +110,25 @@ height: 8rem;
 .show-img{
    height: 30ex;
 }
+
+
+.review-card {
+    min-height: 230px;
+    border-radius: 12px;
+    border: 1px solid #e5e5e5;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    transition: 0.2s;
+}
+
+.review-comment {
+    min-height: 60px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.review-card {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+} 

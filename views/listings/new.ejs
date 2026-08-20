@@ -5,7 +5,7 @@
 
         <h3 class="mb-4">Create a New Listing</h3>
 
-        <form method="POST" action="/listings">
+        <form method="POST" action="/listings" novalidate class="needs-validation">
 
             <!-- Title -->
             <div class="mb-3">
@@ -19,7 +19,7 @@
                     required
                 >
             </div>
-
+              <div class="valid-feedback">Looks Great</div>
             <!-- Description -->
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
@@ -70,7 +70,7 @@
                         class="form-control"
                         placeholder="Enter Country"
                         required
-                    >
+                    >d
                 </div>
 
             </div>

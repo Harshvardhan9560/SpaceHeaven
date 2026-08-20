@@ -5,24 +5,32 @@ const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
 const Listing = require("./models/listing");
+const Review = require("./models/review");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-
+const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema, reviewSchema } = require("./schema.js");
+const wrapAsync = require("./utils/wrapAsync");
+const listings = require("./routes/listing.js");
+const reviews = require("./routes/review");
 const MONGO_URL = process.env.ATLASDB_URL;
+
+
+// MIDDLEWARE
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.engine('ejs' , ejsMate); 
-app.use(express.static(path.join(__dirname,"/public")));
+
+app.engine("ejs", ejsMate);
+
+app.use(express.static(path.join(__dirname, "/public")));
 
 
-console.log("ATLASDB_URL exists:", !!process.env.ATLASDB_URL);
-console.log("Mongo URL:", process.env.ATLASDB_URL ? "Present" : "Missing");
-
-
-
+// DATABASE
 
 main()
     .then(() => {
@@ -36,89 +44,81 @@ async function main() {
     await mongoose.connect(MONGO_URL);
 }
 
-const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
-});
-// Root Route
+// ROOT ROUTE
+
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
-// ======================
-// INDEX ROUTE
-// ======================
-app.get("/listings", async (req, res) => {
-    const alllisting = await Listing.find({});
-    res.render("listings/index", { alllisting });
-});
 
-// ======================
-// NEW ROUTE
-// ======================
-app.get("/listings/new", (req, res) => {
-    res.render("listings/new");
-});
 
-// ======================
-// CREATE ROUTE
-// ======================
-app.post("/listings", async (req, res) => {
-    console.log("BODY:", req.body);
-    console.log("LISTING:", req.body.listing);
 
-    const newListing = new Listing(req.body.listing);
-    await newListing.save();
 
-    res.redirect("/listings");
-});
-// ======================
-// EDIT ROUTE
-// ======================
-app.get("/listings/:id/edit", async (req, res) => {
-    const { id } = req.params;
+// VALIDATE REVIEW
 
-    const listing = await Listing.findById(id);
+const validatereview = (req, res, next) => {
 
-    if (!listing) {
-        return res.send("Listing not found");
+    let { error } = reviewSchema.validate(req.body);
+
+    if (error) {
+
+        let errMsg = error.details
+            .map((el) => el.message)
+            .join(",");
+
+        throw new ExpressError(400, errMsg);
+
+    } else {
+        next();
     }
+};
 
-    res.render("listings/edit", { listing });
+app.use("/listings",listings);
+app.use("/listings/:id/reviews", reviews)
+
+
+
+
+// 404 ROUTE — MUST BE LAST
+
+app.all("/*splat", (req, res, next) => {
+
+    next(
+        new ExpressError(
+            404,
+            "Page Not Found"
+        )
+    );
+
 });
 
-// update route 
 
-app.put("/listings/:id", async (req,res)=> {
-    let {id} = req.params;
-   await  Listing.findByIdAndUpdate(id, { ...req.body.listing});
-   res.redirect(`/listings/${id}`);
-} );
+// ERROR HANDLER — MUST BE LAST
 
+app.use((err, req, res, next) => {
 
-// delete route
-app.delete("/listings/:id" , async(req,res)=> {
-    let {id} = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
-    res.redirect("/listings");
-    
+    const {
+        statusCode = 500,
+        message = "Something went wrong"
+    } = err;
+
+    res.status(statusCode).send({
+        statusCode,
+        message
+    });
+
 });
 
 
+// SERVER
 
-// ======================
-// SHOW ROUTE
-// ======================
-app.get("/listings/:id", async (req, res) => {
-    const { id } = req.params;
+const PORT = process.env.PORT || 8080;
 
-    const listing = await Listing.findById(id);
+app.listen(PORT, () => {
 
-    if (!listing) {
-        return res.send("Listing not found");
-    }
+    console.log(
+        `Server is listening on port ${PORT}`
+    );
 
-    res.render("listings/show", { listing });
 });
