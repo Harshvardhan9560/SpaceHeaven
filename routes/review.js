@@ -15,6 +15,7 @@ const { reviewSchema } = require("../schema.js");
 // =========================
 
 const validateReview = (req, res, next) => {
+    console.log(req.params.id);
 
     let { error } = reviewSchema.validate(req.body);
 

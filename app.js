@@ -4,17 +4,16 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
-const Listing = require("./models/listing");
-const Review = require("./models/review");
+
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema, reviewSchema } = require("./schema.js");
-const wrapAsync = require("./utils/wrapAsync");
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review");
-const MONGO_URL = process.env.ATLASDB_URL;
 
+const ExpressError = require("./utils/ExpressError.js");
+
+const listings = require("./routes/listing.js");
+const reviews = require("./routes/review.js");
+
+const MONGO_URL = process.env.ATLASDB_URL;
 
 // MIDDLEWARE
 
@@ -122,3 +121,11 @@ app.listen(PORT, () => {
     );
 
 });
+
+
+
+app.get("/", (req, res) => {
+    res.send("Hi, I am root!");
+});
+
+module.exports = app;
