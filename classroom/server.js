@@ -2,6 +2,11 @@ const express = require("express");
 const app = express();
 const users = require("./routes/user.js");
 
+app.get("/getcookies", (req,res)=>{
+    res.cookie("greet","hello");
+    res.send("sent your cookies! ");
+})
+
 
 
 
