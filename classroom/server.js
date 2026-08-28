@@ -3,12 +3,24 @@ const app = express();
 const users = require("./routes/user.js");
 const cookiesParser = require("cookie-parser");
 const cookieParser = require("cookie-parser");
-app.use(cookieParser());
+
+app.use(cookieParser("secretecode"));
+
+app.get("/gesignedcookies",(req,res)=>{
+    res.cookie("made-IN","India",{signed:true});
+    res.send("signed cookie send ");
+});
 
 app.get("/getcookies", (req,res)=>{
     res.cookie("greet","hello");
     res.send("sent your cookies! ");
 })
+
+app.get("/verify",(req,res)=>{
+    console.log(req.signedCookies);
+    res.send("verified");
+});
+
 
 app.get("/greet" , (req,res)=>{
     let {name= "anonymous"} = req.cookies;
