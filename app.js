@@ -4,32 +4,51 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
-
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-
 const ExpressError = require("./utils/ExpressError.js");
+
+const session = require("express-session");
+const flash = require("connect-flash");
 
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
+const { reviewSchema } = require("./schema.js");
 
 const MONGO_URL = process.env.ATLASDB_URL;
 
-// MIDDLEWARE
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride("_method"));
+const sessionOptions = {
+    secret: "mysupersecretstring",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true
+    }
+};
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
 app.engine("ejs", ejsMate);
 
-app.use(express.static(path.join(__dirname, "/public")));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public")));
 
+app.use(session(sessionOptions));
+app.use(flash());
 
-// DATABASE
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    next();
+});
+
+async function main() {
+    await mongoose.connect(MONGO_URL);
+}
 
 main()
     .then(() => {
@@ -39,64 +58,33 @@ main()
         console.log(err);
     });
 
-async function main() {
-    await mongoose.connect(MONGO_URL);
-}
-
-
-// ROOT ROUTE
-
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
+app.use("/listings", listings);
 
-
-
-
-// VALIDATE REVIEW
-
-const validatereview = (req, res, next) => {
-
-    let { error } = reviewSchema.validate(req.body);
+const validateReview = (req, res, next) => {
+    const { error } = reviewSchema.validate(req.body);
 
     if (error) {
-
-        let errMsg = error.details
+        const errMsg = error.details
             .map((el) => el.message)
             .join(",");
 
         throw new ExpressError(400, errMsg);
-
-    } else {
-        next();
     }
+
+    next();
 };
 
-app.use("/listings",listings);
-app.use("/listings/:id/reviews", reviews)
-
-
-
-
-// 404 ROUTE — MUST BE LAST
+app.use("/listings/:id/reviews", validateReview, reviews);
 
 app.all("/*splat", (req, res, next) => {
-
-    next(
-        new ExpressError(
-            404,
-            "Page Not Found"
-        )
-    );
-
+    next(new ExpressError(404, "Page Not Found"));
 });
 
-
-// ERROR HANDLER — MUST BE LAST
-
 app.use((err, req, res, next) => {
-
     const {
         statusCode = 500,
         message = "Something went wrong"
@@ -106,26 +94,10 @@ app.use((err, req, res, next) => {
         statusCode,
         message
     });
-
 });
-
-
-// SERVER
 
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-
-    console.log(
-        `Server is listening on port ${PORT}`
-    );
-
+    console.log(`Server is listening on port ${PORT}`);
 });
-
-
-
-app.get("/", (req, res) => {
-    res.send("Hi, I am root!");
-});
-
-module.exports = app;
