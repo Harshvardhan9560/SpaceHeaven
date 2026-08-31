@@ -58,14 +58,14 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/demouser", async(req,res)=>{
-    let fakeUser = new User ({
-        email: "student@gmail.com",
-        username:"Legend"
-    });
-   let registeredUser = await  User.register(fakeUser,"Hello");
-   res.send(registeredUser);
-});
+// app.get("/demouser", async(req,res)=>{
+//     let fakeUser = new User ({
+//         email: "student@gmail.com",
+//         username:"Legend"
+//     });
+//    let registeredUser = await  User.register(fakeUser,"Hello");
+//    res.send(registeredUser);
+// });
 
 async function main() {
     await mongoose.connect(MONGO_URL);
