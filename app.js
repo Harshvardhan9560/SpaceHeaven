@@ -10,10 +10,15 @@ const ExpressError = require("./utils/ExpressError.js");
 
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy =  require("passport-local");
+const User = require("./models/user.js");
 
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review.js");
-const { reviewSchema } = require("./schema.js");
+
+const listingsRouter = require("./routes/listing.js");
+const reviewsRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
+const { reviewSchema } = require("./schema.js"); 
 
 const MONGO_URL = process.env.ATLASDB_URL;
 
@@ -39,11 +44,27 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(session(sessionOptions));
 app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.authenticate());
+passport.deserializeUser(User.authenticate());
+
 
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
+   console.log("success");
     next();
+});
+
+app.get("/demouser", async(req,res)=>{
+    let fakeUser = new User ({
+        email: "student@gmail.com",
+        username:"Legend"
+    });
+   let registeredUser = await  User.register(fakeUser,"Hello");
+   res.send(registeredUser);
 });
 
 async function main() {
@@ -62,13 +83,13 @@ app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
-app.use("/listings", listings);
-
+app.use("/listings", listingsRouter);
+app.use("/",userRouter);
 const validateReview = (req, res, next) => {
     const { error } = reviewSchema.validate(req.body);
 
     if (error) {
-        const errMsg = error.details
+        const errMsg = error.details 
             .map((el) => el.message)
             .join(",");
 
@@ -78,11 +99,13 @@ const validateReview = (req, res, next) => {
     next();
 };
 
-app.use("/listings/:id/reviews", validateReview, reviews);
+app.use("/listings/:id/reviews", validateReview, reviewsRouter);
 
 app.all("/*splat", (req, res, next) => {
     next(new ExpressError(404, "Page Not Found"));
 });
+
+
 
 app.use((err, req, res, next) => {
     const {

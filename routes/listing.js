@@ -70,7 +70,8 @@ router.get("/:id/edit", async (req, res, next) => {
         const listing = await Listing.findById(id);
 
         if (!listing) {
-            return res.send("Listing not found");
+            req.flash("error","Listing you requested not exist!");
+            res.redirect("/listings");
         }
 
         res.render("listings/edit", { listing });
@@ -95,17 +96,23 @@ router.put("/:id", async (req, res, next) => {
     }
 });
 
+
 router.delete("/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        await Listing.findByIdAndDelete(id);
+        const deletedListing = await Listing.findByIdAndDelete(id);
+
+        console.log(deletedListing);
 
         req.flash("success", "Listing deleted successfully!");
+
         res.redirect("/listings");
+
     } catch (err) {
         next(err);
     }
 });
+
 
 module.exports = router;
