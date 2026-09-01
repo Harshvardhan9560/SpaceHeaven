@@ -4,7 +4,7 @@ const router = express.Router();
 const { listingSchema } = require("../schema.js");
 const ExpressError = require("../utils/ExpressError.js");
 const Listing = require("../models/listing");
-
+const {isLoggedIn} = require("../middleware.js");
 const validateListing = (req, res, next) => {
     const { error } = listingSchema.validate(req.body);
 
@@ -19,7 +19,7 @@ const validateListing = (req, res, next) => {
     next();
 };
 
-router.get("/", async (req, res, next) => {
+router.get("/",isLoggedIn, async (req, res, next) => {
     try {
         const alllisting = await Listing.find({});
         res.render("listings/index", { alllisting });
@@ -28,7 +28,8 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn,(req, res) => {
+
     res.render("listings/new");
 });
 
@@ -63,7 +64,7 @@ router.post("/", validateListing, async (req, res, next) => {
     }
 });
 
-router.get("/:id/edit", async (req, res, next) => {
+router.get("/:id/edit",isLoggedIn, async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -80,7 +81,7 @@ router.get("/:id/edit", async (req, res, next) => {
     }
 });
 
-router.put("/:id", async (req, res, next) => {
+router.put("/:id",isLoggedIn, async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -97,7 +98,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id",isLoggedIn, async (req, res, next) => {
     try {
         const { id } = req.params;
 
