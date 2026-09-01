@@ -11,61 +11,69 @@ const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
-const LocalStrategy =  require("passport-local");
+const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
-
 
 const listingsRouter = require("./routes/listing.js");
 const reviewsRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-const { reviewSchema } = require("./schema.js"); 
+const { reviewSchema } = require("./schema.js");
 
 const MONGO_URL = process.env.ATLASDB_URL;
+
+// ---------------- SESSION ----------------
 
 const sessionOptions = {
     secret: "mysupersecretstring",
     resave: false,
     saveUninitialized: true,
+
     cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true
     }
 };
 
+// ---------------- EJS ----------------
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.engine("ejs", ejsMate);
+
+// ---------------- MIDDLEWARE ----------------
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
+// ---------------- SESSION + FLASH ----------------
+
 app.use(session(sessionOptions));
 app.use(flash());
+
+// ---------------- PASSPORT ----------------
+
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.authenticate());
-passport.deserializeUser(User.authenticate());
 
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// ---------------- LOCALS ----------------
 
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
-   console.log("success");
+    res.locals.currUser = req.user;
+
     next();
 });
 
-// app.get("/demouser", async(req,res)=>{
-//     let fakeUser = new User ({
-//         email: "student@gmail.com",
-//         username:"Legend"
-//     });
-//    let registeredUser = await  User.register(fakeUser,"Hello");
-//    res.send(registeredUser);
-// });
+// ---------------- DATABASE ----------------
 
 async function main() {
     await mongoose.connect(MONGO_URL);
@@ -79,17 +87,25 @@ main()
         console.log(err);
     });
 
+// ---------------- HOME ----------------
+
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
+// ---------------- ROUTES ----------------
+
 app.use("/listings", listingsRouter);
-app.use("/",userRouter);
+
+app.use("/", userRouter);
+
+// ---------------- REVIEW VALIDATION ----------------
+
 const validateReview = (req, res, next) => {
     const { error } = reviewSchema.validate(req.body);
 
     if (error) {
-        const errMsg = error.details 
+        const errMsg = error.details
             .map((el) => el.message)
             .join(",");
 
@@ -99,13 +115,19 @@ const validateReview = (req, res, next) => {
     next();
 };
 
-app.use("/listings/:id/reviews", validateReview, reviewsRouter);
+app.use(
+    "/listings/:id/reviews",
+    validateReview,
+    reviewsRouter
+);
+
+// ---------------- 404 ----------------
 
 app.all("/*splat", (req, res, next) => {
     next(new ExpressError(404, "Page Not Found"));
 });
 
-
+// ---------------- ERROR HANDLER ----------------
 
 app.use((err, req, res, next) => {
     const {
@@ -118,6 +140,8 @@ app.use((err, req, res, next) => {
         message
     });
 });
+
+// ---------------- SERVER ----------------
 
 const PORT = process.env.PORT || 8080;
 
