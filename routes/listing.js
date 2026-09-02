@@ -37,14 +37,16 @@ router.get("/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        const listing = await Listing
-            .findById(id)
-            .populate("reviews");
+        const listing = await Listing.findById(id)
+        .populate("reviews")
+        .populate("owner");
+         
 
         if (!listing) {
             return res.send("Listing not found");
         }
-
+        console.log(listing);
+        
         res.render("listings/show", { listing });
     } catch (err) {
         next(err);
@@ -54,7 +56,7 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", validateListing, async (req, res, next) => {
     try {
         const newListing = new Listing(req.body.listing);
-
+        newListing.owner = req.user._id;
         await newListing.save();
 
         req.flash("success", "New Listing created!");
