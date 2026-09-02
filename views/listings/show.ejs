@@ -19,7 +19,7 @@
         <p class="card-text">
             <%= listing.location %>, <%= listing.country %>
         </p>
-         <% if(currUser && currUser._id.equals(listing.owner._id)) {%>
+       
         <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">
             Edit Listing
         </a>
@@ -32,7 +32,7 @@
             <button class="btn btn-danger ms-4">
                 Delete
             </button>
-                  <% } %>
+                 
         </form>
 
 

@@ -6,31 +6,30 @@ const ExpressError = require("../utils/ExpressError.js");
 
 const Listing = require("../models/listing");
 const Review = require("../models/review");
-
-const { reviewSchema } = require("../schema.js");
+const {validateReview} = require("../middleware");
 
 
 // =========================
 // VALIDATE REVIEW
 // =========================
 
-const validateReview = (req, res, next) => {
-    console.log(req.params.id);
+// const validateReview = (req, res, next) => {
+//     console.log(req.params.id);
 
-    let { error } = reviewSchema.validate(req.body);
+//     let { error } = reviewSchema.validate(req.body);
 
-    if (error) {
+//     if (error) {
 
-        let errMsg = error.details
-            .map((el) => el.message)
-            .join(",");
+//         let errMsg = error.details
+//             .map((el) => el.message)
+//             .join(",");
 
-        throw new ExpressError(400, errMsg);
+//         throw new ExpressError(400, errMsg);
 
-    } else {
-        next();
-    }
-};
+//     } else {
+//         next();
+//     }
+// };
 
 
 // =========================
