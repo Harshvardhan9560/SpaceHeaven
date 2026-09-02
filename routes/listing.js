@@ -56,6 +56,8 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", validateListing, async (req, res, next) => {
     try {
         const newListing = new Listing(req.body.listing);
+        console.log(req.user);
+        
         newListing.owner = req.user._id;
         await newListing.save();
 
