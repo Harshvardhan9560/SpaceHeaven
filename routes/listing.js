@@ -5,7 +5,8 @@ const { listingSchema } = require("../schema.js");
 const ExpressError = require("../utils/ExpressError.js");
 const Listing = require("../models/listing");
 const { isLoggedIn, isOwner } = require("../middleware.js");
-
+const listingController = require("../controllers/listings.js");
+const wrapAsync = require("../utils/wrapAsync.js");
 // Validation middleware
 const validateListing = (req, res, next) => {
     const { error } = listingSchema.validate(req.body);
@@ -22,14 +23,8 @@ const validateListing = (req, res, next) => {
 };
 
 // INDEX - show all listings
-router.get("/", isLoggedIn, async (req, res, next) => {
-    try {
-        const alllisting = await Listing.find({});
-        res.render("listings/index", { alllisting });
-    } catch (err) {
-        next(err);
-    }
-});
+router.get("/", wrapAsync(listingController.index));
+
 
 // NEW - form
 router.get("/new", isLoggedIn, (req, res) => {
