@@ -68,6 +68,9 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 // ---------------- LOCALS ----------------
 
 app.use((req, res, next) => {
