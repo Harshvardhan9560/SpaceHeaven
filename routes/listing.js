@@ -22,32 +22,24 @@ const validateListing = (req, res, next) => {
     next();
 };
 
-// INDEX - show all listings
-router.get("/", wrapAsync(listingController.index));
+router.route("/")
+.get( wrapAsync(listingController.index))
+.post( isLoggedIn, validateListing, 
+    wrapAsync(listingController.createListing));
 
-
-// NEW - form
-router.get("/new", isLoggedIn, listingController.renderNewForm
+    // NEW - form
+router.get("/new", isLoggedIn,
+     listingController.renderNewForm
 );
 
-// SHOW - show one listing
-router.get("/:id", wrapAsync(listingController.showListing));
-
-
-// CREATE - create listing
-router.post("/", isLoggedIn, validateListing, wrapAsync(listingController.createListing));
-
-
-
-
+router.route("/:id")
+.get( wrapAsync(listingController.showListing))
+.put(isLoggedIn, isOwner, validateListing, wrapAsync(listingController.updateListing))
+.delete( isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
 
 // EDIT - edit form
-router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm));
-
-// UPDATE - update listing
-router.put("/:id", isLoggedIn, isOwner, validateListing, wrapAsync(listingController.updateListing));
-
-// DELETE - delete listing
-router.delete("/:id", isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
+router.get("/:id/edit", isLoggedIn,
+     isOwner,
+     wrapAsync(listingController.renderEditForm));
 
 module.exports = router;  
