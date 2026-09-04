@@ -140,15 +140,11 @@ app.all("/*splat", (req, res, next) => {
 // ---------------- ERROR HANDLER ----------------
 
 app.use((err, req, res, next) => {
-    const {
-        statusCode = 500,
-        message = "Something went wrong"
-    } = err;
+    console.log(err);
+    console.log(err.stack);
 
-    res.status(statusCode).send({
-        statusCode,
-        message
-    });
+    let { statusCode = 500, message = "Something went wrong" } = err;
+    res.status(statusCode).send({ statusCode, message });
 });
 
 // ---------------- SERVER ----------------
