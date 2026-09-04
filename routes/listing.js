@@ -27,98 +27,27 @@ router.get("/", wrapAsync(listingController.index));
 
 
 // NEW - form
-router.get("/new", isLoggedIn, (req, res) => {
-    res.render("listings/new");
-});
+router.get("/new", isLoggedIn, listingController.renderNewForm
+);
 
 // SHOW - show one listing
-router.get("/:id", async (req, res, next) => {
-    try {
-        const { id } = req.params;
+router.get("/:id", wrapAsync(listingController.showListing));
 
-        const listing = await Listing.findById(id)
-            .populate({
-              path: "reviews",
-              populate: {
-              path: "author"
-                  }
-               })
-
-        if (!listing) {
-            req.flash("error", "Listing not found");
-            return res.redirect("/listings");
-        }
-
-        res.render("listings/show", { listing });
-    } catch (err) {
-        next(err);
-    }
-});
 
 // CREATE - create listing
-router.post("/", isLoggedIn, validateListing, async (req, res, next) => {
-    try {
-        const newListing = new Listing(req.body.listing);
+router.post("/", isLoggedIn, validateListing, wrapAsync(listingController.createListing));
 
-        newListing.owner = req.user._id;
 
-        await newListing.save();
 
-        req.flash("success", "New Listing created!");
-        res.redirect("/listings");
-    } catch (err) {
-        next(err);
-    }
-});
+
 
 // EDIT - edit form
-router.get("/:id/edit", isLoggedIn, isOwner, async (req, res, next) => {
-    try {
-        const { id } = req.params;
-
-        const listing = await Listing.findById(id);
-
-        if (!listing) {
-            req.flash("error", "Listing you requested does not exist!");
-            return res.redirect("/listings");
-        }
-
-        res.render("listings/edit", { listing });
-    } catch (err) {
-        next(err);
-    }
-});
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm));
 
 // UPDATE - update listing
-router.put("/:id", isLoggedIn, isOwner, validateListing, async (req, res, next) => {
-    try {
-        const { id } = req.params;
-
-        await Listing.findByIdAndUpdate(
-            id,
-            { ...req.body.listing },
-            { runValidators: true }
-        );
-
-        req.flash("success", "Listing updated successfully!");
-        res.redirect(`/listings/${id}`);
-    } catch (err) {
-        next(err);
-    }
-});
+router.put("/:id", isLoggedIn, isOwner, validateListing, wrapAsync(listingController.updateListing));
 
 // DELETE - delete listing
-router.delete("/:id", isLoggedIn, isOwner, async (req, res, next) => {
-    try {
-        const { id } = req.params;
-
-        await Listing.findByIdAndDelete(id);
-
-        req.flash("success", "Listing deleted successfully!");
-        res.redirect("/listings");
-    } catch (err) {
-        next(err);
-    }
-});
+router.delete("/:id", isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
 
 module.exports = router;  
