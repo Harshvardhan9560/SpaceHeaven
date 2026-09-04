@@ -7,6 +7,8 @@ const Listing = require("../models/listing");
 const { isLoggedIn, isOwner } = require("../middleware.js");
 const listingController = require("../controllers/listings.js");
 const wrapAsync = require("../utils/wrapAsync.js");
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 // Validation middleware
 const validateListing = (req, res, next) => {
     const { error } = listingSchema.validate(req.body);
@@ -24,8 +26,11 @@ const validateListing = (req, res, next) => {
 
 router.route("/")
 .get( wrapAsync(listingController.index))
-.post( isLoggedIn, validateListing, 
-    wrapAsync(listingController.createListing));
+// .post( isLoggedIn, validateListing, 
+//     wrapAsync(listingController.createListing));
+.post( upload.single('listing[image]'),(req,res)=>{
+    res.send(req.file);
+})
 
     // NEW - form
 router.get("/new", isLoggedIn,
