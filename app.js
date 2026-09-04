@@ -123,7 +123,7 @@ const validateReview = (req, res, next) => {
 
 app.use(
     "/listings/:id/reviews",
-    validateReview,
+   
     reviewsRouter
 );
 
