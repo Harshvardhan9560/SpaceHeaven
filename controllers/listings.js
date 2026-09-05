@@ -75,12 +75,18 @@ module.exports.updateListing = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        await Listing.findByIdAndUpdate(
+     let listing =   await Listing.findByIdAndUpdate(
             id,
             { ...req.body.listing },
             { runValidators: true }
         );
+            if(typeof req.file !== "undefined" ){
+        let url = req.file.path;
+        let filename = req.file.filename;
+        listing.image= { url, filename };
+        await listing.save();}
 
+          
         req.flash("success", "Listing updated successfully!");
         res.redirect(`/listings/${id}`);
     } catch (err) {

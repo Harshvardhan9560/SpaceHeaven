@@ -7,8 +7,9 @@
 <div class="container mt-4">
     <h3 class="mb-4">Edit Your Listing</h3>
 
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
-
+    <form method="POST"  action="/listings/<%= listing._id %>?_method=PUT" 
+        enctype="multipart/form-data">
+     
         <!-- Title -->
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
@@ -39,12 +40,12 @@
             <label for="image" class="form-label">Image URL</label>
             <input
                 id="image"
-                type="text"
-                name="listing[image][url]"
-                value="<%= listing.image.url %>"
+                type="file"
+                name="listing[image]"
+                
                 class="form-control"
                 placeholder="Enter Image URL"
-                required
+               
             >
         </div>
 
