@@ -5,6 +5,7 @@
         display: flex;
         flex-wrap: wrap;
         text-align: center;
+        align-items: center;
         
     }
 </style>
@@ -20,8 +21,22 @@
         cursor: pointer;
     }
     .filter  p{
-      font-size: 0.8 rem;
+      font-size: 0.8rem;
 
+    }
+
+    .tax-info {
+      display: none;
+    }
+
+    .taxt-toggle{
+      border: 1px solid black;
+      border-radius: 1rem;
+      height: 3.5rem;
+      padding: 1rem;
+      margin-left: 5rem;
+      display: flex;
+      align-items: center;
     }
 </style>
 <div class="container">
@@ -71,7 +86,23 @@
            <div>   <i class="fa-regular fa-snowflake"></i></div>
              <p>Arctic</p>
         </div>
+            <div class="filter">
+           <div> <i class="fa-solid fa-igloo"></i></div>
+             <p>Dome</p>
+        </div>
         
+        <div class="filter">
+           <div>  <i class="fa-solid fa-house-chimney"></i></div>
+             <p>Palace</p>
+        </div>
+        
+        
+        <div class="taxt-toggle">
+          <div class="form-check-reverse form-switch">
+  <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+  <label class="form-check-label" for="switchCheckDefault">Default total after  taxes</label>
+</div>
+        </div>
       
 
      </div>
@@ -89,8 +120,14 @@
                         <h5 class="card-title"><%= listing.title %></h5>
 
                         <p class="card-text">
-                            ₹ <%= listing.price %><br>
-                            <%= listing.location %>, <%= listing.country %>
+                        <p class="card-text">
+    ₹ <%= listing.price %>/ night <br>  
+    <i class="tax-info">+   18% GST</i> </p>
+   <p class="card-text">
+    <%= listing.location %>,<br>
+     <%=   listing.country %> </p>
+
+                            
                         </p>
                     </div>
                 </div>
@@ -100,3 +137,19 @@
         <% } %>
     </div>
 </div> 
+
+<script>
+  let taxSwitch = document.getElementById("switchCheckDefault");
+  taxSwitch.addEventListener("click",()=>{
+   let taxInfo = document.getElementsByClassName("tax-info");
+   for(info of taxInfo){
+    if( info.style.display != "inline"){
+    info.style.display = "inline";}
+    else{
+      info.style.display ="none";
+    }
+   }
+  
+  
+  });
+</script>
