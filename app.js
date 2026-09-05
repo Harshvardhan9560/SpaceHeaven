@@ -100,9 +100,9 @@ main()
 // ---------------- HOME ----------------
 
 app.get("/", (req, res) => {
-    res.redirect("/listings");
+    req.flash("error", "Page Not Found!");
+   
 });
-
 // ---------------- ROUTES ----------------
 
 app.use("/listings", listingsRouter);
